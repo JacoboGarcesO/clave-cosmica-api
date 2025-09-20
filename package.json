@@ -1,0 +1,25 @@
+{
+  "name": "clave-cosmica-api",
+  "version": "1.0.0",
+  "description": "Payment API with Node.js, Express and Mongoose",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "dotenv": "16.6.1",
+    "cors": "2.8.5",
+    "express": "4.18.2",
+    "mongoose": "8.0.3"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "mongoose",
+    "api",
+    "payment"
+  ],
+  "author": "",
+  "license": "ISC"
+}
