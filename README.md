@@ -1,78 +1,119 @@
 # Clave Cosmica API
 
-A simple Node.js API for saving payment information using Express and Mongoose.
+Una API de Node.js para gestionar información de pagos con encriptación de datos sensibles usando Express, Mongoose y criptografía AES-256-CBC.
 
-## Features
+## Características
 
-- Save payment data with email, name, paymentKey, and createdDate
-- MVC architecture
-- MongoDB integration with Mongoose
-- CORS enabled
-- Input validation
-- Error handling
+- Guardar información de pagos con encriptación de campos sensibles
+- Arquitectura MVC
+- Integración con MongoDB usando Mongoose
+- CORS habilitado
+- Validación de entrada
+- Manejo de errores
+- Endpoints RESTful para gestión de pagos
 
-## Installation
+## Instalación
 
-1. Install dependencies:
+1. Instalar dependencias:
 ```bash
 npm install
 ```
 
-2. Make sure MongoDB is running on your system (default: mongodb://localhost:27017)
+2. Configurar variables de entorno (opcional):
 
-3. Start the server:
+3. Iniciar el servidor:
 ```bash
 npm start
 ```
 
-The server will start on port 3000 by default.
+El servidor se iniciará en el puerto 4000 por defecto. O en el que indiques en las variables de entorno.
 
-## API Endpoints
+## Endpoints de la API
 
 ### POST /api/payments
 
-Save a new payment.
+Guardar un nuevo pago. Los campos `transaction_id` y `accessCode` se encriptan automáticamente antes de guardarse en la base de datos.
 
-**Request Body:**
+**Cuerpo de la petición:**
 ```json
 {
-  "email": "user@example.com",
-  "name": "John Doe",
-  "paymentKey": "unique-payment-key-123",
-  "createdDate": "2023-09-19T10:30:00.000Z" // Optional, defaults to current date
+  "transaction_id": "TXN123456789",
+  "email": "usuario@ejemplo.com",
+  "accessCode": "ACC789012345",
+  "amount": 100.50,
+  "currency": "USD",
+  "status": "pending"
 }
 ```
 
-**Response (Success - 201):**
+**Campos requeridos:**
+- `transaction_id` (string): ID único de la transacción
+- `email` (string): Email del usuario
+- `accessCode` (string): Código de acceso
+- `amount` (number): Monto del pago
+
+**Campos opcionales:**
+- `currency` (string): Moneda (por defecto: "USD")
+- `status` (string): Estado del pago (por defecto: "pending")
+
+**Respuesta (Éxito - 201):**
 ```json
 {
   "success": true,
   "message": "Payment saved successfully",
   "data": {
     "_id": "650f1234567890abcdef1234",
-    "email": "user@example.com",
-    "name": "John Doe",
-    "paymentKey": "unique-payment-key-123",
-    "createdDate": "2023-09-19T10:30:00.000Z",
+    "transaction_id": "TXN123456789",
+    "email": "usuario@ejemplo.com",
+    "accessCode": "ACC789012345",
+    "amount": 100.5,
+    "currency": "USD",
+    "status": "pending",
     "createdAt": "2023-09-19T10:30:00.000Z",
     "updatedAt": "2023-09-19T10:30:00.000Z"
   }
 }
 ```
 
-**Response (Error - 400):**
+**Respuesta (Error - 400):**
 ```json
 {
   "success": false,
-  "message": "Email, name, and paymentKey are required fields"
+  "message": "transaction_id, email, accessCode, and amount are required fields"
+}
+```
+
+### GET /api/payments
+
+Obtener todos los pagos guardados. Los campos encriptados se desencriptan automáticamente en la respuesta.
+
+**Respuesta (Éxito - 200):**
+```json
+{
+  "success": true,
+  "message": "Payments retrieved successfully",
+  "count": 2,
+  "data": [
+    {
+      "_id": "650f1234567890abcdef1234",
+      "transaction_id": "TXN123456789",
+      "email": "usuario@ejemplo.com",
+      "accessCode": "ACC789012345",
+      "amount": 100.5,
+      "currency": "USD",
+      "status": "pending",
+      "createdAt": "2023-09-19T10:30:00.000Z",
+      "updatedAt": "2023-09-19T10:30:00.000Z"
+    }
+  ]
 }
 ```
 
 ### GET /health
 
-Health check endpoint.
+Endpoint de verificación de salud del servidor.
 
-**Response:**
+**Respuesta:**
 ```json
 {
   "success": true,
@@ -81,36 +122,78 @@ Health check endpoint.
 }
 ```
 
-## Environment Variables
 
-- `PORT`: Server port (default: 3000)
-- `MONGODB_URI`: MongoDB connection string (default: mongodb://localhost:27017/clave-cosmica)
-
-## Project Structure
+## Estructura del Proyecto
 
 ```
-├── app.js                 # Main application file
-├── package.json           # Dependencies and scripts
-├── config/
-│   └── database.js        # MongoDB connection
-├── controllers/
-│   └── paymentController.js # Payment business logic
-├── models/
-│   └── Payment.js         # Payment Mongoose schema
-└── routes/
-    └── paymentRoutes.js   # Payment routes
+├── src/
+│   ├── app.js                    # Archivo principal de la aplicación
+│   ├── config/
+│   │   └── database.js           # Conexión a MongoDB
+│   ├── controllers/
+│   │   └── paymentController.js  # Lógica de negocio de pagos
+│   ├── models/
+│   │   └── Payment.js            # Esquema Mongoose de Payment
+│   ├── routes/
+│   │   └── paymentRoutes.js      # Rutas de pagos
+│   └── utils/
+│       └── crypto.js             # Utilidades de encriptación
+├── package.json                  # Dependencias y scripts
+├── .gitignore                   # Archivos ignorados por Git
+└── README.md                    # Documentación del proyecto
 ```
 
-## Testing the API
+## Pruebas de la API
 
-You can test the API using curl:
+### Usando curl
 
+**Crear un pago:**
 ```bash
-curl -X POST http://localhost:3000/api/payments \
+curl -X POST http://localhost:4000/api/payments \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@example.com",
-    "name": "Test User",
-    "paymentKey": "test-payment-123"
+    "transaction_id": "TXN123456789",
+    "email": "test@ejemplo.com",
+    "accessCode": "ACC789012345",
+    "amount": 100.50,
+    "currency": "USD",
+    "status": "pending"
   }'
 ```
+
+**Obtener todos los pagos:**
+```bash
+curl -X GET http://localhost:4000/api/payments
+```
+
+**Verificar salud del servidor:**
+```bash
+curl -X GET http://localhost:4000/health
+```
+
+### Usando Postman
+
+1. **POST** `http://localhost:4000/api/payments`
+   - Headers: `Content-Type: application/json`
+   - Body (raw JSON): Ver ejemplo de curl arriba
+
+2. **GET** `http://localhost:4000/api/payments`
+   - Sin headers adicionales
+
+3. **GET** `http://localhost:4000/health`
+   - Sin headers adicionales
+
+## Estados de Pago
+
+Los pagos pueden tener los siguientes estados:
+- `pending`: Pendiente (por defecto)
+- `completed`: Completado
+- `failed`: Fallido
+- `cancelled`: Cancelado
+
+## Códigos de Error
+
+- **400**: Error de validación (campos requeridos faltantes)
+- **500**: Error interno del servidor
+- **201**: Pago creado exitosamente
+- **200**: Consulta exitosa
